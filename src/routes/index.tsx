@@ -180,7 +180,7 @@ function Index() {
                 </div>
               </div>
               <div className="h-80">
-                <ResponsiveContainer>
+                <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={chartData} margin={{ left: -20, right: 10 }}>
                     <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
                     <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={11} tickFormatter={(d) => (d === 0 ? "Today" : d > 0 ? `+${d}` : `${d}`)} />
