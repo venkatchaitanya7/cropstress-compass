@@ -65,12 +65,12 @@ export function buildSeries(inp: FieldInputs, intervention: Intervention, horizo
   for (let d = -history; d <= 0; d++) {
     pts.push({ day: d, observed: clamp(now + daily * d + (r() - 0.5) * 6) });
   }
-  pts[pts.length - 1].observed = now;
+  pts[pts.length - 1]!.observed = now;
   const base = imageOnlyStress(inp.ndvi);
   const iv = INTERVENTIONS[intervention];
   const effect = iv.moisture * clamp(35 - inp.soilMoisture, 0, 35) + iv.heat * clamp(inp.tempTrend * 6, 0, 30) + iv.ndvi * clamp((0.8 - inp.ndvi) * 60, 0, 40);
 
-  const last = pts[pts.length - 1];
+  const last = pts[pts.length - 1]!;
   last.fusion = now;
   last.fusionLow = now;
   last.fusionHigh = now;
@@ -90,7 +90,7 @@ export function buildSeries(inp: FieldInputs, intervention: Intervention, horizo
       recovery: clamp(f - effect * ramp),
     });
   }
-  const end = pts[pts.length - 1];
+  const end = pts[pts.length - 1]!;
   const daysToCritical = pts.find((p) => p.day > 0 && (p.fusion ?? 0) >= 70)?.day ?? null;
   const benefit = (end.fusion ?? 0) - (end.recovery ?? 0);
   const successProb = clamp(Math.round(100 / (1 + Math.exp(-(benefit - 8) / 4))), 2, 98);
