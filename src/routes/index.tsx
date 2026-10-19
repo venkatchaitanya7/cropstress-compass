@@ -22,11 +22,12 @@ export const Route = createFileRoute("/")({
 });
 
 const CROPS = ["Wheat", "Rice", "Maize", "Cotton", "Sugarcane"];
-const PRESETS: Record<string, Omit<FieldInputs, "crop">> = {
+type Preset = Omit<FieldInputs, "crop" | "seed">;
+const PRESETS = {
   "Drought onset": { soilMoisture: 11, tempTrend: 3, rainfall: 2, ndvi: 0.55, ndviSlope: -0.07 },
   "Heatwave": { soilMoisture: 24, tempTrend: 4.5, rainfall: 6, ndvi: 0.62, ndviSlope: -0.05 },
   "Healthy": { soilMoisture: 34, tempTrend: 0, rainfall: 28, ndvi: 0.78, ndviSlope: 0.02 },
-};
+} satisfies Record<string, Preset>;
 
 function Slider({ icon: Icon, label, unit, value, min, max, step, onChange }: {
   icon: typeof Droplets; label: string; unit: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void;
@@ -72,9 +73,9 @@ function Stat({ icon: Icon, label, value, hint }: { icon: typeof Droplets; label
 
 function Index() {
   const [crop, setCrop] = useState("Wheat");
-  const [f, setF] = useState(PRESETS["Drought onset"]);
+  const [f, setF] = useState<Preset>(PRESETS["Drought onset"]);
   const [iv, setIv] = useState<Intervention>("irrigation");
-  const set = (k: keyof typeof f) => (v: number) => setF((p) => ({ ...p, [k]: v }));
+  const set = (k: keyof Preset) => (v: number) => setF((p) => ({ ...p, [k]: v }));
 
   const res = useMemo(() => buildSeries({ crop, ...f, seed: crop.length * 13 }, iv), [crop, f, iv]);
   const bt = useMemo(() => backtest(), []);
@@ -139,7 +140,7 @@ function Index() {
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Scenario presets</div>
               <div className="grid grid-cols-3 gap-2">
                 {Object.keys(PRESETS).map((k) => (
-                  <button key={k} onClick={() => setF(PRESETS[k])} className="rounded-md border border-border bg-secondary/50 px-2 py-2 text-[11px] text-foreground transition hover:border-accent hover:text-accent">{k}</button>
+                  <button key={k} onClick={() => setF(PRESETS[k as keyof typeof PRESETS])} className="rounded-md border border-border bg-secondary/50 px-2 py-2 text-[11px] text-foreground transition hover:border-accent hover:text-accent">{k}</button>
                 ))}
               </div>
             </div>
@@ -185,7 +186,7 @@ function Index() {
                     <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={11} tickFormatter={(d) => (d === 0 ? "Today" : d > 0 ? `+${d}` : `${d}`)} />
                     <YAxis domain={[0, 100]} stroke="var(--muted-foreground)" fontSize={11} />
                     <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontFamily: "var(--font-mono)", fontSize: 12 }}
-                      formatter={(v: number | number[]) => (Array.isArray(v) ? `${v[0].toFixed(0)}–${v[1].toFixed(0)}` : v.toFixed(1))} />
+                      formatter={(v) => (Array.isArray(v) ? `${Number(v[0]).toFixed(0)}–${Number(v[1]).toFixed(0)}` : Number(v).toFixed(1))} />
                     <ReferenceLine y={70} stroke="var(--destructive)" strokeDasharray="4 4" label={{ value: "CRITICAL", fill: "var(--destructive)", fontSize: 10, position: "insideTopLeft" }} />
                     <ReferenceLine x={0} stroke="var(--accent)" />
                     <Area dataKey="band" name="Confidence" fill="var(--destructive)" fillOpacity={0.12} stroke="none" />
